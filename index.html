@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로또 번호 생성기</title>
+    <style>
+      :root {
+        --bg-1: #0f2027;
+        --bg-2: #203a43;
+        --bg-3: #2c5364;
+        --card: rgba(255, 255, 255, 0.9);
+        --ink: #0e1a24;
+        --accent: #ffb703;
+        --accent-2: #ff6b6b;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        height: 100%;
+        margin: 0;
+        font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, sans-serif;
+        color: var(--ink);
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        background: radial-gradient(1200px 800px at 10% 10%, #2a9d8f33, transparent),
+                    radial-gradient(900px 700px at 90% 20%, #e76f5133, transparent),
+                    linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+      }
+
+      .wrap {
+        width: min(720px, 92vw);
+        padding: 28px;
+      }
+
+      .card {
+        background: var(--card);
+        backdrop-filter: blur(6px);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        transform: translateY(10px);
+        opacity: 0;
+        animation: rise 700ms ease-out forwards;
+      }
+
+      h1 {
+        margin: 0 0 8px 0;
+        font-size: clamp(24px, 3.2vw, 34px);
+        letter-spacing: -0.5px;
+      }
+
+      p {
+        margin: 0 0 18px 0;
+        color: #3a4a59;
+      }
+
+      .numbers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 16px 0 22px 0;
+        min-height: 60px;
+      }
+
+      .ball {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        color: #0b1116;
+        background: radial-gradient(circle at 30% 30%, #fff6b7, var(--accent));
+        box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.7),
+                    0 6px 14px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        opacity: 0;
+        animation: pop 400ms ease-out forwards;
+      }
+
+      .ball:nth-child(2) { animation-delay: 60ms; }
+      .ball:nth-child(3) { animation-delay: 120ms; }
+      .ball:nth-child(4) { animation-delay: 180ms; }
+      .ball:nth-child(5) { animation-delay: 240ms; }
+      .ball:nth-child(6) { animation-delay: 300ms; }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .primary {
+        background: linear-gradient(135deg, var(--accent), #ffd166);
+        color: #1a1a1a;
+        font-weight: 700;
+      }
+
+      .secondary {
+        background: transparent;
+        color: #22303c;
+        border: 1px solid #d1d9e0;
+      }
+
+      .hint {
+        font-size: 13px;
+        color: #596a79;
+        margin-top: 12px;
+      }
+
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(18px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes pop {
+        from { opacity: 0; transform: scale(0.7); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      @media (max-width: 480px) {
+        .ball { width: 46px; height: 46px; }
+        button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>로또 번호 생성기</h1>
+        <p>버튼을 누르면 1~45 사이의 숫자 6개가 생성됩니다.</p>
+
+        <div id="numbers" class="numbers" aria-live="polite">
+          <span class="hint">아직 생성된 번호가 없어요.</span>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="generate">번호 생성</button>
+          <button class="secondary" id="reset">초기화</button>
+        </div>
+        <div class="hint">Tip: 매번 새로고침하지 않아도 버튼으로 반복 생성 가능</div>
+      </div>
+    </div>
+
+    <script>
+      const numbersEl = document.getElementById("numbers");
+      const generateBtn = document.getElementById("generate");
+      const resetBtn = document.getElementById("reset");
+
+      function generateLotto() {
+        const pool = Array.from({ length: 45 }, (_, i) => i + 1);
+        const pick = [];
+        while (pick.length < 6) {
+          const idx = Math.floor(Math.random() * pool.length);
+          pick.push(pool.splice(idx, 1)[0]);
+        }
+        return pick.sort((a, b) => a - b);
+      }
+
+      function renderNumbers(nums) {
+        numbersEl.innerHTML = "";
+        nums.forEach((n) => {
+          const span = document.createElement("span");
+          span.className = "ball";
+          span.textContent = n;
+          numbersEl.appendChild(span);
+        });
+      }
+
+      generateBtn.addEventListener("click", () => {
+        renderNumbers(generateLotto());
+      });
+
+      resetBtn.addEventListener("click", () => {
+        numbersEl.innerHTML = '<span class="hint">아직 생성된 번호가 없어요.</span>';
+      });
+    </script>
+  </body>
+</html>
